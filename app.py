@@ -3,6 +3,7 @@ import folium
 from streamlit_folium import folium_static
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
+from geopy.exc import GeocoderTimedOut
 
 # Set the title
 st.title("SpaceX Damage Zone Checker")
@@ -33,12 +34,7 @@ for label, radius in damage_zones.items():
         popup=label
     ).add_to(m)
 
-# Address input
-address = st.text_input("Enter an address to check its location:")
-
-if address:
-    from geopy.exc import GeocoderTimedOut
-
+# Function to get geolocation with timeout handling
 def get_location(address):
     geolocator = Nominatim(user_agent="geo_checker", timeout=10)  # Added timeout
     try:
@@ -46,8 +42,11 @@ def get_location(address):
     except GeocoderTimedOut:
         return None  # Prevents crash if geocoder times out
 
-location = get_location(address)  # Uses the new function
+# Address input
+address = st.text_input("Enter an address to check its location:")
 
+if address:
+    location = get_location(address)
 
     if location:
         address_coords = (location.latitude, location.longitude)
@@ -76,4 +75,6 @@ location = get_location(address)  # Uses the new function
         st.write("❌ Address not found. Try again.")
 
 # Show map
+folium_static(m)
+
 folium_static(m)
