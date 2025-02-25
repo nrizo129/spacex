@@ -18,6 +18,10 @@ DAMAGE_ZONES = {
     "Low Damage (Yellow)": 7
 }
 
+# Initialize session state for persistence
+if "map_data" not in st.session_state:
+    st.session_state.map_data = None
+
 def is_within_damage_zone(address):
     """Checks if the address is within the 7-mile damage zone."""
     try:
@@ -46,11 +50,11 @@ address = st.text_input("Enter an address:")
 
 if st.button("Check Address"):
     coords, in_zone, message = is_within_damage_zone(address)
-    
+
     if coords:
         st.write(message)
 
-        # ✅ Ensure the map is always centered on the crash site
+        # ✅ Create a map and store it in session state
         m = folium.Map(location=CRASH_SITE, zoom_start=12)
 
         # ✅ Add damage zones (heat circles)
@@ -71,14 +75,17 @@ if st.button("Check Address"):
             CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning")
         ).add_to(m)
 
-        # ✅ Always add a marker for the entered address
+        # ✅ Add a marker for the entered address
         folium.Marker(
             coords, 
-            popup=address, 
+            popup=f"{address}<br>{message}", 
             icon=folium.Icon(color="green" if in_zone else "red", icon="ok-sign" if in_zone else "remove-sign")
         ).add_to(m)
 
-        # ✅ Corrected: Use `st_folium()` instead of `folium_static()`
-        st_folium(m, width=725, height=500)
-    else:
-        st.error(message)
+        # ✅ Store map data in session state so it stays visible
+        st.session_state.map_data = m
+
+# ✅ Display the map from session state (so it doesn't disappear)
+if st.session_state.map_data:
+    st_folium(st.session_state.map_data, width=725, height=500)
+
