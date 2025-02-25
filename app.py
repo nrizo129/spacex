@@ -48,9 +48,14 @@ def is_within_damage_zone(address):
 
 # Streamlit UI
 st.title("Property Damage Zone Checker")
-address = st.text_input("Enter an address:")
 
-if st.button("Check Address"):
+# ✅ Use a form so pressing "Enter" triggers the search
+with st.form("address_form"):
+    address = st.text_input("Enter an address:")
+    submit_button = st.form_submit_button("Check Address")
+
+# ✅ Execute search if "Enter" is pressed or button is clicked
+if submit_button and address:
     coords, in_zone, message = is_within_damage_zone(address)
 
     if coords:
@@ -92,6 +97,6 @@ if st.button("Check Address"):
 if st.session_state.map_data:
     st_folium(st.session_state.map_data, width=725, height=500)
 
-# ✅ Display the zone status message **below the "Check Address" button**
+# ✅ Display the zone status message **below the form**
 if st.session_state.zone_message:
     st.markdown(f"### {st.session_state.zone_message}")
