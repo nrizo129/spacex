@@ -66,9 +66,10 @@ if submit_button and address:
             f"**Zone Status:** {message}"
         )
 
-        # ✅ Adjust zoom to ensure both crash site and searched address are visible
-        map_center = [(CRASH_SITE[0] + coords[0]) / 2, (CRASH_SITE[1] + coords[1]) / 2]
-        m = folium.Map(location=map_center, zoom_start=10)
+        # ✅ Adjust zoom level to fit both crash site and searched address
+        bounds = [CRASH_SITE, coords]
+        m = folium.Map(location=CRASH_SITE, zoom_start=12)
+        m.fit_bounds(bounds)
 
         # ✅ Add damage zones (heat circles)
         colors = {"High Damage (Red)": "red", "Moderate Damage (Orange)": "orange", "Low Damage (Yellow)": "yellow"}
