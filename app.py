@@ -72,7 +72,7 @@ if address:
         else:
             zone = "Outside Damage Zone"
 
-        # Add marker for the entered address
+        # ✅ Always add a marker, even if outside the damage zone
         folium.Marker(
             location=[location[0], location[1]],
             popup=f"{address}<br>Distance: {round(distance_miles, 2)} miles<br>{zone}",
