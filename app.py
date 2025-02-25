@@ -1,10 +1,9 @@
 import streamlit as st
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 import googlemaps
 from geopy.distance import geodesic
 
-# ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
 GOOGLE_MAPS_API_KEY = "AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM"
 
 # Initialize Google Maps client
@@ -84,4 +83,4 @@ if address:
         st.write("❌ Address not found. Try again.")
 
 # Show map
-folium_static(m)
+st_folium(m, width=725, height=500)
