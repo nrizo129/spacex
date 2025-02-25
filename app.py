@@ -10,7 +10,11 @@ gmaps = googlemaps.Client(key=API_KEY)
 
 # Define the crash site coordinates (center of the damage zone)
 CRASH_SITE = (25.997, -97.156)  # Replace with actual coordinates
-DAMAGE_RADIUS_MILES = 7  # Max damage radius
+DAMAGE_ZONES = {
+    "High Damage (Red)": 3,
+    "Moderate Damage (Orange)": 5,
+    "Low Damage (Yellow)": 7
+}
 
 def is_within_damage_zone(address):
     """Checks if the address is within the 7-mile damage zone."""
@@ -23,10 +27,14 @@ def is_within_damage_zone(address):
         address_coords = (location['lat'], location['lng'])
         distance = geodesic(CRASH_SITE, address_coords).miles
         
-        if distance <= DAMAGE_RADIUS_MILES:
-            return address_coords, True, "Within damage zone ✅"
+        if distance <= 3:
+            return address_coords, True, "High Damage Zone ✅"
+        elif distance <= 5:
+            return address_coords, True, "Moderate Damage Zone ✅"
+        elif distance <= 7:
+            return address_coords, True, "Low Damage Zone ✅"
         else:
-            return address_coords, False, "Outside damage zone ❌"
+            return address_coords, False, "Outside Damage Zone ❌"
     except Exception as e:
         return None, None, f"Error: {str(e)}"
 
@@ -40,20 +48,31 @@ if st.button("Check Address"):
     if coords:
         st.write(message)
         
-        # Create the map
-        map_center = CRASH_SITE if in_zone else coords
-        m = folium.Map(location=map_center, zoom_start=12)
-        
+        # Create the map with full heat zones
+        m = folium.Map(location=CRASH_SITE, zoom_start=12)
+
+        # Add damage zones (heat circles)
+        colors = {"High Damage (Red)": "red", "Moderate Damage (Orange)": "orange", "Low Damage (Yellow)": "yellow"}
+        for label, radius in DAMAGE_ZONES.items():
+            folium.Circle(
+                location=CRASH_SITE, 
+                radius=radius * 1609,  # Convert miles to meters
+                color=colors[label], 
+                fill=True, 
+                fill_color=colors[label], 
+                fill_opacity=0.3,
+                popup=label
+            ).add_to(m)
+
         # Add crash site marker
-        folium.Marker(CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning"))
-        
+        folium.Marker(CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning")).add_to(m)
+
         # Add user address marker
         icon_color = "green" if in_zone else "red"
-        icon_symbol = "ok-sign" if in_zone else "remove-sign"
         folium.Marker(
             coords, 
             popup=address, 
-            icon=folium.Icon(color=icon_color, icon=icon_symbol)
+            icon=folium.Icon(color=icon_color, icon="ok-sign" if in_zone else "remove-sign")
         ).add_to(m)
         
         # Display the map
