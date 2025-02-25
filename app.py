@@ -4,6 +4,7 @@ from streamlit_folium import st_folium
 import googlemaps
 from geopy.distance import geodesic
 
+# ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
 GOOGLE_MAPS_API_KEY = "AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM"
 
 # Initialize Google Maps client
