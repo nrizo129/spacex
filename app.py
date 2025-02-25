@@ -9,7 +9,7 @@ API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"  # Replace this with your ac
 gmaps = googlemaps.Client(key=API_KEY)
 
 # Define the crash site coordinates (center of the damage zone)
-CRASH_SITE = (your_latitude, your_longitude)  # Replace with actual coordinates
+CRASH_SITE = (25.997, -97.156)  # Replace with actual coordinates
 DAMAGE_RADIUS_MILES = 7  # Max damage radius
 
 def is_within_damage_zone(address):
