@@ -1,11 +1,13 @@
 import streamlit as st
 import googlemaps
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 from geopy.distance import geodesic
 
-# Set up Google Maps API
-API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"  # Replace this with your actual API key
+# ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
+API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"
+
+# Initialize Google Maps client
 gmaps = googlemaps.Client(key=API_KEY)
 
 # Define the crash site coordinates (center of the damage zone)
@@ -47,11 +49,11 @@ if st.button("Check Address"):
     
     if coords:
         st.write(message)
-        
-        # Create the map with full heat zones
+
+        # ✅ Ensure the map is always centered on the crash site
         m = folium.Map(location=CRASH_SITE, zoom_start=12)
 
-        # Add damage zones (heat circles)
+        # ✅ Add damage zones (heat circles)
         colors = {"High Damage (Red)": "red", "Moderate Damage (Orange)": "orange", "Low Damage (Yellow)": "yellow"}
         for label, radius in DAMAGE_ZONES.items():
             folium.Circle(
@@ -64,18 +66,19 @@ if st.button("Check Address"):
                 popup=label
             ).add_to(m)
 
-        # Add crash site marker
-        folium.Marker(CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning")).add_to(m)
+        # ✅ Add crash site marker
+        folium.Marker(
+            CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning")
+        ).add_to(m)
 
-        # Add user address marker
-        icon_color = "green" if in_zone else "red"
+        # ✅ Always add a marker for the entered address
         folium.Marker(
             coords, 
             popup=address, 
-            icon=folium.Icon(color=icon_color, icon="ok-sign" if in_zone else "remove-sign")
+            icon=folium.Icon(color="green" if in_zone else "red", icon="ok-sign" if in_zone else "remove-sign")
         ).add_to(m)
-        
-        # Display the map
-        folium_static(m)
+
+        # ✅ Corrected: Use `st_folium()` instead of `folium_static()`
+        st_folium(m, width=725, height=500)
     else:
         st.error(message)
