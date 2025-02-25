@@ -29,22 +29,22 @@ def is_within_damage_zone(address):
     try:
         geocode_result = gmaps.geocode(address)
         if not geocode_result:
-            return None, None, "Address not found"
+            return None, None, "Address not found", None
         
         location = geocode_result[0]['geometry']['location']
         address_coords = (location['lat'], location['lng'])
         distance = geodesic(CRASH_SITE, address_coords).miles
         
         if distance <= 3:
-            return address_coords, True, "High Damage Zone ✅"
+            return address_coords, True, "High Damage Zone ✅", distance
         elif distance <= 5:
-            return address_coords, True, "Moderate Damage Zone ✅"
+            return address_coords, True, "Moderate Damage Zone ✅", distance
         elif distance <= 7:
-            return address_coords, True, "Low Damage Zone ✅"
+            return address_coords, True, "Low Damage Zone ✅", distance
         else:
-            return address_coords, False, "Outside Damage Zone ❌"
+            return address_coords, False, "Outside Damage Zone ❌", distance
     except Exception as e:
-        return None, None, f"Error: {str(e)}"
+        return None, None, f"Error: {str(e)}", None
 
 # Streamlit UI
 st.title("Property Damage Zone Checker")
@@ -56,11 +56,13 @@ with st.form("address_form"):
 
 # ✅ Execute search if "Enter" is pressed or button is clicked
 if submit_button and address:
-    coords, in_zone, message = is_within_damage_zone(address)
+    coords, in_zone, message, distance = is_within_damage_zone(address)
 
     if coords:
         # ✅ Store message in session state for persistent display
-        st.session_state.zone_message = message
+        st.session_state.zone_message = f"**Address:** {address}  
+                                          **Distance from crash site:** {distance:.2f} miles  
+                                          **Zone Status:** {message}"
 
         # ✅ Create a map and store it in session state
         m = folium.Map(location=CRASH_SITE, zoom_start=12)
@@ -93,10 +95,10 @@ if submit_button and address:
         # ✅ Store map data in session state so it stays visible
         st.session_state.map_data = m
 
+# ✅ Display the zone status message **between the form and the map**
+if st.session_state.zone_message:
+    st.markdown(f"### {st.session_state.zone_message}")
+
 # ✅ Display the map from session state (so it doesn't disappear)
 if st.session_state.map_data:
     st_folium(st.session_state.map_data, width=725, height=500)
-
-# ✅ Display the zone status message **below the form**
-if st.session_state.zone_message:
-    st.markdown(f"### {st.session_state.zone_message}")
