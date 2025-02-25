@@ -1,9 +1,14 @@
 import streamlit as st
 import folium
 from streamlit_folium import folium_static
-from geopy.geocoders import Nominatim
+import googlemaps
 from geopy.distance import geodesic
-from geopy.exc import GeocoderTimedOut
+
+# ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
+GOOGLE_MAPS_API_KEY = "PASTE-YOUR-API-KEY-HERE"
+
+# Initialize Google Maps client
+gmaps = googlemaps.Client(key=AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM)
 
 # Set the title
 st.title("SpaceX Damage Zone Checker")
@@ -34,13 +39,17 @@ for label, radius in damage_zones.items():
         popup=label
     ).add_to(m)
 
-# Function to get geolocation with timeout handling
+# Function to get geolocation using Google Maps API
 def get_location(address):
-    geolocator = Nominatim(user_agent="geo_checker", timeout=10)  # Added timeout
     try:
-        return geolocator.geocode(address)
-    except GeocoderTimedOut:
-        return None  # Prevents crash if geocoder times out
+        geocode_result = gmaps.geocode(address)
+        if geocode_result:
+            location = geocode_result[0]["geometry"]["location"]
+            return location["lat"], location["lng"]
+        else:
+            return None
+    except Exception as e:
+        return None  # Prevents crashes if the API request fails
 
 # Address input
 address = st.text_input("Enter an address to check its location:")
@@ -49,7 +58,7 @@ if address:
     location = get_location(address)
 
     if location:
-        address_coords = (location.latitude, location.longitude)
+        address_coords = (location[0], location[1])
         launch_coords = (launch_pad_lat, launch_pad_lon)
         distance_miles = geodesic(launch_coords, address_coords).miles
 
@@ -65,7 +74,7 @@ if address:
 
         # Add marker for the entered address
         folium.Marker(
-            location=[location.latitude, location.longitude],
+            location=[location[0], location[1]],
             popup=f"{address}<br>Distance: {round(distance_miles, 2)} miles<br>{zone}",
             icon=folium.Icon(color="blue" if zone == "Outside Damage Zone" else "black")
         ).add_to(m)
@@ -75,6 +84,4 @@ if address:
         st.write("❌ Address not found. Try again.")
 
 # Show map
-folium_static(m)
-
 folium_static(m)
