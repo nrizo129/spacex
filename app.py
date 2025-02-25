@@ -1,87 +1,62 @@
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
 import googlemaps
+import folium
+from streamlit_folium import folium_static
 from geopy.distance import geodesic
 
-# ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
-GOOGLE_MAPS_API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"
+# Set up Google Maps API
+API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"  # Replace this with your actual API key
+gmaps = googlemaps.Client(key=API_KEY)
 
-# Initialize Google Maps client
-gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
+# Define the crash site coordinates (center of the damage zone)
+CRASH_SITE = (your_latitude, your_longitude)  # Replace with actual coordinates
+DAMAGE_RADIUS_MILES = 7  # Max damage radius
 
-# Set the title
-st.title("SpaceX Damage Zone Checker")
-
-# Define launch site coordinates
-launch_pad_lat, launch_pad_lon = 25.997, -97.156  
-
-# Define damage zones
-damage_zones = {
-    "High Damage (Red)": 3 * 1609,
-    "Moderate Damage (Orange)": 5 * 1609,
-    "Low Damage (Yellow)": 7 * 1609
-}
-
-# Create the base map
-m = folium.Map(location=[launch_pad_lat, launch_pad_lon], zoom_start=12)
-
-# Add damage zones to the map
-colors = {"High Damage (Red)": "red", "Moderate Damage (Orange)": "orange", "Low Damage (Yellow)": "yellow"}
-for label, radius in damage_zones.items():
-    folium.Circle(
-        location=[launch_pad_lat, launch_pad_lon], 
-        radius=radius, 
-        color=colors[label], 
-        fill=True, 
-        fill_color=colors[label], 
-        fill_opacity=0.3,
-        popup=label
-    ).add_to(m)
-
-# Function to get geolocation using Google Maps API
-def get_location(address):
+def is_within_damage_zone(address):
+    """Checks if the address is within the 7-mile damage zone."""
     try:
         geocode_result = gmaps.geocode(address)
-        if geocode_result:
-            location = geocode_result[0]["geometry"]["location"]
-            return location["lat"], location["lng"]
+        if not geocode_result:
+            return None, None, "Address not found"
+        
+        location = geocode_result[0]['geometry']['location']
+        address_coords = (location['lat'], location['lng'])
+        distance = geodesic(CRASH_SITE, address_coords).miles
+        
+        if distance <= DAMAGE_RADIUS_MILES:
+            return address_coords, True, "Within damage zone ✅"
         else:
-            return None
+            return address_coords, False, "Outside damage zone ❌"
     except Exception as e:
-        return None  # Prevents crashes if the API request fails
+        return None, None, f"Error: {str(e)}"
 
-# Address input
-address = st.text_input("Enter an address to check its location:")
+# Streamlit UI
+st.title("Property Damage Zone Checker")
+address = st.text_input("Enter an address:")
 
-if address:
-    location = get_location(address)
-
-    if location:
-        address_coords = (location[0], location[1])
-        launch_coords = (launch_pad_lat, launch_pad_lon)
-        distance_miles = geodesic(launch_coords, address_coords).miles
-
-        # Determine damage zone
-        if distance_miles <= 3:
-            zone = "High Damage Zone (Red)"
-        elif distance_miles <= 5:
-            zone = "Moderate Damage Zone (Orange)"
-        elif distance_miles <= 7:
-            zone = "Low Damage Zone (Yellow)"
-        else:
-            zone = "Outside Damage Zone"
-
-        # ✅ Always add a marker, even if outside the damage zone
+if st.button("Check Address"):
+    coords, in_zone, message = is_within_damage_zone(address)
+    
+    if coords:
+        st.write(message)
+        
+        # Create the map
+        map_center = CRASH_SITE if in_zone else coords
+        m = folium.Map(location=map_center, zoom_start=12)
+        
+        # Add crash site marker
+        folium.Marker(CRASH_SITE, popup="Crash Site", icon=folium.Icon(color="red", icon="warning"))
+        
+        # Add user address marker
+        icon_color = "green" if in_zone else "red"
+        icon_symbol = "ok-sign" if in_zone else "remove-sign"
         folium.Marker(
-            location=[location[0], location[1]],
-            popup=f"{address}<br>Distance: {round(distance_miles, 2)} miles<br>{zone}",
-            icon=folium.Icon(color="blue" if zone == "Outside Damage Zone" else "black")
+            coords, 
+            popup=address, 
+            icon=folium.Icon(color=icon_color, icon=icon_symbol)
         ).add_to(m)
-
-        st.write(f"✅ **{address} is {round(distance_miles, 2)} miles from the launch site → {zone}**")
+        
+        # Display the map
+        folium_static(m)
     else:
-        st.write("❌ Address not found. Try again.")
-
-# Show map
-st_folium(m, width=725, height=500)
+        st.error(message)
