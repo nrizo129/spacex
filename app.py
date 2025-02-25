@@ -5,7 +5,7 @@ from streamlit_folium import st_folium
 from geopy.distance import geodesic
 
 # ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
-API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"
+API_KEY = "PASTE_YOUR_API_KEY_HERE"
 
 # Initialize Google Maps client
 gmaps = googlemaps.Client(key=API_KEY)
@@ -60,9 +60,11 @@ if submit_button and address:
 
     if coords:
         # ✅ Store message in session state for persistent display
-        st.session_state.zone_message = f"**Address:** {address}  
-                                          **Distance from crash site:** {distance:.2f} miles  
-                                          **Zone Status:** {message}"
+        st.session_state.zone_message = (
+            f"**Address:** {address}  \n"
+            f"**Distance from crash site:** {distance:.2f} miles  \n"
+            f"**Zone Status:** {message}"
+        )
 
         # ✅ Create a map and store it in session state
         m = folium.Map(location=CRASH_SITE, zoom_start=12)
