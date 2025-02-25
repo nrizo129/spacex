@@ -5,10 +5,10 @@ import googlemaps
 from geopy.distance import geodesic
 
 # ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
-GOOGLE_MAPS_API_KEY = "PASTE-YOUR-API-KEY-HERE"
+GOOGLE_MAPS_API_KEY = "AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM"
 
 # Initialize Google Maps client
-gmaps = googlemaps.Client(key=AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM)
+gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
 
 # Set the title
 st.title("SpaceX Damage Zone Checker")
