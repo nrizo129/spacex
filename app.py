@@ -37,8 +37,17 @@ for label, radius in damage_zones.items():
 address = st.text_input("Enter an address to check its location:")
 
 if address:
-    geolocator = Nominatim(user_agent="geo_checker")
-    location = geolocator.geocode(address)
+    from geopy.exc import GeocoderTimedOut
+
+def get_location(address):
+    geolocator = Nominatim(user_agent="geo_checker", timeout=10)  # Added timeout
+    try:
+        return geolocator.geocode(address)
+    except GeocoderTimedOut:
+        return None  # Prevents crash if geocoder times out
+
+location = get_location(address)  # Uses the new function
+
 
     if location:
         address_coords = (location.latitude, location.longitude)
