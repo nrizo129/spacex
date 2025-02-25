@@ -5,7 +5,7 @@ import googlemaps
 from geopy.distance import geodesic
 
 # ✅ PASTE YOUR GOOGLE MAPS API KEY BELOW
-GOOGLE_MAPS_API_KEY = "AIzaSyD-0TYSx882QsMrUw_kC-9Ys4EbPPWv8HM"
+GOOGLE_MAPS_API_KEY = "AIzaSyC2Lr7iKIXJnNKgVjS8Gcz0C6l__NstQfo"
 
 # Initialize Google Maps client
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
