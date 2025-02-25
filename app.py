@@ -21,6 +21,8 @@ DAMAGE_ZONES = {
 # Initialize session state for persistence
 if "map_data" not in st.session_state:
     st.session_state.map_data = None
+if "zone_message" not in st.session_state:
+    st.session_state.zone_message = ""
 
 def is_within_damage_zone(address):
     """Checks if the address is within the 7-mile damage zone."""
@@ -52,7 +54,8 @@ if st.button("Check Address"):
     coords, in_zone, message = is_within_damage_zone(address)
 
     if coords:
-        st.write(message)
+        # ✅ Store message in session state for persistent display
+        st.session_state.zone_message = message
 
         # ✅ Create a map and store it in session state
         m = folium.Map(location=CRASH_SITE, zoom_start=12)
@@ -89,3 +92,6 @@ if st.button("Check Address"):
 if st.session_state.map_data:
     st_folium(st.session_state.map_data, width=725, height=500)
 
+# ✅ Display the zone status message **below the "Check Address" button**
+if st.session_state.zone_message:
+    st.markdown(f"### {st.session_state.zone_message}")
