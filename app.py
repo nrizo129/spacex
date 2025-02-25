@@ -105,4 +105,4 @@ if st.session_state.zone_message:
 
 # ✅ Display the map from session state (so it doesn't disappear)
 if st.session_state.map_data:
-    st_folium(st.session_state.map_data, width=825, height=600)
+    st_folium(st.session_state.map_data, width=925, height=700)
