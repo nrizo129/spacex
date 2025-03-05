@@ -18,11 +18,13 @@ DAMAGE_ZONES = {
     "Low Damage (Yellow)": 7
 }
 
-# Initialize session state for persistence
+# ✅ Initialize session state for persistence
 if "map_data" not in st.session_state:
     st.session_state.map_data = None
 if "zone_message" not in st.session_state:
     st.session_state.zone_message = ""
+if "last_searched_address" not in st.session_state:
+    st.session_state.last_searched_address = ""
 
 def is_within_damage_zone(address):
     """Checks if the address is within the 7-mile damage zone."""
@@ -54,8 +56,9 @@ with st.form("address_form"):
     address = st.text_input("Enter an address:")
     submit_button = st.form_submit_button("Check Address")
 
-# ✅ Execute search if "Enter" is pressed or button is clicked
-if submit_button and address:
+# ✅ Execute search **only if the address is new**
+if submit_button and address and address != st.session_state.last_searched_address:
+    st.session_state.last_searched_address = address
     coords, in_zone, message, distance = is_within_damage_zone(address)
 
     if coords:
@@ -96,13 +99,13 @@ if submit_button and address:
             icon=folium.Icon(color="green" if in_zone else "red", icon="ok-sign" if in_zone else "remove-sign")
         ).add_to(m)
 
-        # ✅ Store map data in session state so it stays visible
+        # ✅ Store map data in session state so it doesn't reload unnecessarily
         st.session_state.map_data = m
 
 # ✅ Display the zone status message **between the form and the map**
 if st.session_state.zone_message:
     st.markdown(f"### {st.session_state.zone_message}")
 
-# ✅ Display the map from session state (so it doesn't disappear)
+# ✅ Display the map from session state **only if available**
 if st.session_state.map_data:
-    st_folium(st.session_state.map_data, width=925, height=700)
+    st_folium(st.session_state.map_data, width=725, height=500)
